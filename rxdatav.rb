@@ -148,10 +148,11 @@ def data_importer
 
 	# Create the output directory if it doesn't exist
 	if not (File.exists? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
-	  puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
-	  puts "Hint: Check that the $RXDATA_DIR variable in paths.rb is set to the correct path."
-	  puts
-	  exit
+	  #puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
+	  #puts "Hint: Check that the $RXDATA_DIR variable in paths.rb is set to the correct path."
+	  #puts
+	  #exit
+          recursive_mkdir( $OUTPUT_DIR )
 	end
 
 	# Create the list of rxdata files to export
@@ -264,10 +265,11 @@ def script_importer
 
 	# Create the output directory if it doesn't exist
 	if not (File.exists? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
-	  puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
-	  puts "Hint: Check that the rxdata_dir config option in config.yaml is set correctly."
-	  puts
-	  exit
+	  #puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
+	  #puts "Hint: Check that the rxdata_dir config option in config.yaml is set correctly."
+	  #puts
+	  #exit
+          recursive_mkdir( $OUTPUT_DIR )
 	end
 
 	start_time = Time.now
