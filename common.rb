@@ -7,7 +7,7 @@
 #    common to all of the import/export scripts.
 #===============================================================================
 
-#require 'win32ole'
+require 'win32ole'
 require 'zlib'
 
 #-------------------------------------------------------------------------------------
@@ -54,8 +54,6 @@ $EXPORT_DIGEST_FILE = "digest.txt"
 # be compared with the modification timestamp for rxdata files to determine
 # if they need to be exported.
 $TIME_LOG_FILE = "timestamp.bin"
-
-$CHECKSUM_FILE = "checksum.bin"
 
 # An array of invalid Windows filename strings and their substitutions. This
 # array is used to modify the script title in RMXP's script editor to construct
@@ -164,13 +162,6 @@ def dump_startup_time
   end
 end
 
-
-def dump_checksum(checksum)
-  File.open( $PROJECT_DIR + '/' + $CHECKSUM_FILE, "w+" ) do |outfile|
-    Marshal.dump( checksum, outfile )
-  end
-end
-
 #----------------------------------------------------------------------------
 # load_startup_time: Loads the dumped system time from the temporary file.
 #   directory: The directory to load the system tile from.
@@ -192,13 +183,12 @@ end
 #   process_name: The name of the process.
 #----------------------------------------------------------------------------
 def process_running?(process_name)
-#  names = []
-#  procs = WIN32OLE.connect("winmgmts:\\\\.")
-#  procs.InstancesOf("win32_process").each do |p|
-#	  names.push(p.name.to_s.downcase)
-#  end
-#  return names.index(process_name) != nil
-   return false
+  names = []
+  procs = WIN32OLE.connect("winmgmts:\\\\.")
+  procs.InstancesOf("win32_process").each do |p|
+	  names.push(p.name.to_s.downcase)
+  end
+  return names.index(process_name) != nil
 end
 
 #----------------------------------------------------------------------------
@@ -243,16 +233,6 @@ def fix_name(title)
   result
 end
 
-def load_checksum(delete_file = false)
-  t = nil
-  if File.exists?( $PROJECT_DIR + '/' + $CHECKSUM_FILE )
-    File.open( $PROJECT_DIR + '/' + $CHECKSUM_FILE, "r+" ) do |infile|
-      t = Marshal.load( infile )
-    end
-    if delete_file then File.delete( $PROJECT_DIR + '/' + $CHECKSUM_FILE ) end
-  end
-  t
-end
 
 # Get the project directory from the command-line argument
-$PROJECT_DIR = ARGV[1]
+$PROJECT_DIR = ARGV[0]
