@@ -243,10 +243,11 @@ end
 
 # Create the output directory if it doesn't exist
 if not (File.exists? $OUTPUT_DIR and File.directory? $OUTPUT_DIR)
-  puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
-  puts "Hint: Check that the rxdata_dir config option in config.yaml is set correctly."
-  puts
-  exit
+  #puts "Error: Output directory #{$OUTPUT_DIR} does not exist."
+  #puts "Hint: Check that the rxdata_dir config option in config.yaml is set correctly."
+  #puts
+  recursive_mkdir($OUTPUT_DIR)
+  #exit
 end
 
 start_time = Time.now
