@@ -7,8 +7,9 @@
 #    common to all of the import/export scripts.
 #===============================================================================
 
-require 'win32ole'
+#require 'win32ole'
 require 'zlib'
+#require 'digest/md5'
 
 #-------------------------------------------------------------------------------------
 # This change to Hash is critical if we want to version YAML files.  By default, the
@@ -54,6 +55,8 @@ $EXPORT_DIGEST_FILE = "digest.txt"
 # be compared with the modification timestamp for rxdata files to determine
 # if they need to be exported.
 $TIME_LOG_FILE = "timestamp.bin"
+
+$CHECKSUM_FILE = "checksum.bin"
 
 # An array of invalid Windows filename strings and their substitutions. This
 # array is used to modify the script title in RMXP's script editor to construct
@@ -131,9 +134,29 @@ end
 #----------------------------------------------------------------------------
 def file_modified_since?( filename, timestamp )
   modified_timestamp = File.mtime( filename )
-  return (modified_timestamp > timestamp)
+  bname = File.basename(filename)
+  if timestamp[bname] != nil && timestamp[bname] == modified_timestamp
+    return false
+  else
+    timestamp[bname] = modified_timestamp
+    return true
+  end
 end
-
+=begin
+def file_modified_from?( filename, checksum )
+  hash  = get_file_hash(filename) 
+  bname = File.basename(filename)
+  if checksum[bname] != nil && checksum[bname] == hash 
+    return false
+  else
+    checksum[bname] = hash
+    return true
+  end
+end
+def get_file_hash(filename)
+  return Digest::MD5.hexdigest(File.read(filename))
+end
+=end
 #----------------------------------------------------------------------------
 # rxdata_file_exported?: Returns true if the .rxdata file has been exported.
 #   filename: The name of the .rxdata file.
@@ -156,12 +179,18 @@ end
 # dump_startup_time: Dumps the current system time to a temporary file.
 #   directory: The directory to dump the system tile into.
 #----------------------------------------------------------------------------
-def dump_startup_time
+def dump_startup_time(timestamp)
   File.open( $PROJECT_DIR + '/' + $TIME_LOG_FILE, "w+" ) do |outfile|
-    Marshal.dump( Time.now, outfile )
+    Marshal.dump( timestamp, outfile )
   end
 end
-
+=begin
+def dump_checksum(checksum)
+  File.open( $PROJECT_DIR + '/' + $CHECKSUM_FILE, "w+" ) do |outfile|
+    Marshal.dump( checksum, outfile )
+  end
+end
+=end
 #----------------------------------------------------------------------------
 # load_startup_time: Loads the dumped system time from the temporary file.
 #   directory: The directory to load the system tile from.
@@ -170,7 +199,12 @@ def load_startup_time(delete_file = false)
   t = nil
   if File.exists?( $PROJECT_DIR + '/' + $TIME_LOG_FILE )
     File.open( $PROJECT_DIR + '/' + $TIME_LOG_FILE, "r+" ) do |infile|
-      t = Marshal.load( infile )
+      begin
+        t = Marshal.load( infile )
+	t = {} if not t.is_a?(Hash)
+      rescue
+        t = {}
+      end
     end
     if delete_file then File.delete( $PROJECT_DIR + '/' + $TIME_LOG_FILE ) end
   end
@@ -183,12 +217,13 @@ end
 #   process_name: The name of the process.
 #----------------------------------------------------------------------------
 def process_running?(process_name)
-  names = []
-  procs = WIN32OLE.connect("winmgmts:\\\\.")
-  procs.InstancesOf("win32_process").each do |p|
-	  names.push(p.name.to_s.downcase)
-  end
-  return names.index(process_name) != nil
+#  names = []
+#  procs = WIN32OLE.connect("winmgmts:\\\\.")
+#  procs.InstancesOf("win32_process").each do |p|
+#	  names.push(p.name.to_s.downcase)
+#  end
+#  return names.index(process_name) != nil
+   return false
 end
 
 #----------------------------------------------------------------------------
@@ -232,7 +267,19 @@ def fix_name(title)
   end
   result
 end
-
+=begin
+def load_checksum(delete_file = false)
+  t = nil
+  if File.exists?( $PROJECT_DIR + '/' + $CHECKSUM_FILE )
+    File.open( $PROJECT_DIR + '/' + $CHECKSUM_FILE, "r+" ) do |infile|
+      t = Marshal.load( infile )
+    end
+    if delete_file then File.delete( $PROJECT_DIR + '/' + $CHECKSUM_FILE ) end
+  end
+  t
+end
+=end
 
 # Get the project directory from the command-line argument
-$PROJECT_DIR = ARGV[0]
+$PROJECT_DIR = ARGV[1]
+
