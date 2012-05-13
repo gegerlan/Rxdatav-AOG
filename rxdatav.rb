@@ -165,7 +165,7 @@ def data_exporter
 	 
   	# Load the data from rmxp's data file
     begin
-		  File.open( $INPUT_DIR + files[i], "r+" ) do |datafile| 
+		  File.open( $INPUT_DIR + files[i], "rb" ) do |datafile| 
 		    data = Marshal.load( datafile )
   		end
 		rescue
@@ -195,7 +195,7 @@ def data_exporter
 		target_file = File.basename(files[i], ".rxdata") + ".yaml"
     
   	# Dump the data to a YAML file
-	  File.open($OUTPUT_DIR + target_file, "wb") do |outfile|
+	  File.open($OUTPUT_DIR + target_file, "wt") do |outfile|
 	    Psych.dump({'root' => data }, outfile )
 	  end
 
@@ -299,7 +299,7 @@ def data_importer
   
 	  # Load the data from yaml file
 	  start_time = Time.now
-	  File.open( $INPUT_DIR + files[i], "r+" ) do |yamlfile|
+	  File.open( $INPUT_DIR + files[i], "rt" ) do |yamlfile|
 	    data = Psych.load( yamlfile )
 	  end
 
@@ -311,7 +311,7 @@ def data_importer
 
 	  # Dump the data to .rxdata file
 	  start_time = Time.now
-	  File.open( $OUTPUT_DIR + target_file, "w+" ) do |rxdatafile|
+	  File.open( $OUTPUT_DIR + target_file, "wb" ) do |rxdatafile|
 	    Marshal.dump( data['root'], rxdatafile ) 
 	  end
 
