@@ -188,6 +188,7 @@ def data_exporter
         data.each do |index, map|
           map.scroll_x = 0
           map.scroll_y = 0
+          map.expanded = $MAP_EXPANDED unless $MAP_EXPANDED == nil
         end
 	  end
   

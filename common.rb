@@ -49,6 +49,7 @@ $RXDATA_IGNORE_LIST = config["rxdata_ignore_list"]
 $VERBOSE            = config["verbose"]
 $MAGIC_NUMBER       = config["magic_number"]
 $EDIT_MAP_ID        = config["edit_map_id"]
+$MAP_EXPANDED       = config["map_expanded"]
 
 # This is the filename for the export digest.  This file has an entry for
 # each RGSS script which has been exported from RMXP.  Each entry has 
