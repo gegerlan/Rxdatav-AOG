@@ -1,3 +1,6 @@
+require 'yaml'
+require "#{File.dirname(__FILE__)}/rmxp/rgss.rb"
+require "#{File.dirname(__FILE__)}/common.rb"
 def data_exporter
 	# Set up the directory paths
 	$INPUT_DIR  = $PROJECT_DIR + '/' + $RXDATA_DIR + '/'
@@ -468,10 +471,6 @@ def logtime
 	# dump_startup_time
 	
 end
-
-require 'rmxp/rgss'
-require 'yaml'
-require 'common'
 $COMMAND = ARGV[0]
 case $COMMAND
   when 'data_exporter'
