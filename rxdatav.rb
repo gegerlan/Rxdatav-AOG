@@ -65,16 +65,21 @@ def data_exporter
   	total_load_time += load_time
 
 	  start_time = Time.now
-  
-  	# Prevent the 'magic_number' field of System from always conflicting
+  	# Prevent the 'magic_number' field of System and the editor's map focus from always conflicting
 	  if files[i] == "System.rxdata"
 	    data.magic_number = $MAGIC_NUMBER unless $MAGIC_NUMBER == -1
+        data.edit_map_id  = $EDIT_MAP_ID unless $EDIT_MAP_ID == -1
+      elsif files[i] == "MapInfos.rxdata"
+        data.each do |index, map|
+          map.scroll_x = 0
+          map.scroll_y = 0
+        end
 	  end
   
 		target_file = File.basename(files[i], ".rxdata") + ".yaml"
 
   	# Dump the data to a YAML file
-	  File.open($OUTPUT_DIR + target_file, File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |outfile|
+	  File.open($OUTPUT_DIR + target_file, "wb") do |outfile|
 	    YAML::dump({'root' => data}, outfile )
 	  end
 
@@ -329,7 +334,7 @@ def script_importer
 	  end
 
 	  # Dump the scripts data structure to the RMXP's Scripts.rxdata file
-	  File.open($OUTPUT_DIR + "Scripts.rxdata", File::WRONLY|File::TRUNC|File::CREAT|File::BINARY) do |outfile|
+	  File.open($OUTPUT_DIR + "Scripts.rxdata", "wb") do |outfile|
 	    Marshal.dump(scripts, outfile)
 	  end
 		#$CHECKSUM = load_checksum || {}
@@ -401,7 +406,7 @@ def script_exporter
 
 	# Read in the scripts from script file
 	scripts = nil
-	File.open($INPUT_DIR + "Scripts.rxdata", File::RDONLY|File::BINARY) do |infile|
+	File.open($INPUT_DIR + "Scripts.rxdata", "rb") do |infile|
 	  scripts = Marshal.load(infile)
 	end
 
@@ -427,7 +432,7 @@ def script_exporter
 	scripts.each_index do |i|
 	  if digest[i][2].upcase != "EMPTY"
 	    inflate_start_time = Time.now
-	    File.open($OUTPUT_DIR + digest[i][2], File::WRONLY|File::CREAT|File::TRUNC|File::BINARY) do |outfile|
+	    File.open($OUTPUT_DIR + digest[i][2], "wb") do |outfile|
 	      outfile << Zlib::Inflate.inflate(scripts[i][2])
 	    end
 	    num_exported += 1
