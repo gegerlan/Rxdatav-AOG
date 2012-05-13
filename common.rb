@@ -7,7 +7,7 @@
 #    common to all of the import/export scripts.
 #===============================================================================
 
-#require 'win32ole'
+require 'yaml'
 require 'zlib'
 #require 'digest/md5'
 
@@ -18,18 +18,22 @@ require 'zlib'
 #-------------------------------------------------------------------------------------
 class Hash
   # Replacing the to_yaml function so it'll serialize hashes sorted (by their keys)
-  def to_yaml( opts = {} )
-    YAML::quick_emit( object_id, opts ) do |out|
-      out.map( taguri, to_yaml_style ) do |map|
-        sort.each do |k, v|   # <-- here's my addition (the 'sort')
-          map.add( k, v )
-        end
+  def encode_with(coder)
+    coder.tag = self.class == ::Hash ? nil : "!ruby/hash:#{self.class}"
+    coder.map( coder.tag, coder.style ) do |map|
+      sort.each do |k, v|
+        map.add(k.to_s, v)
       end
     end
   end
 end
-
-require 'yaml'
+module SortedYamlObject
+  def encode_with(coder)
+    instance_variables.sort.each do |iv|
+      coder.map[ iv.to_s.sub(/^@/, '') ] = instance_variable_get(iv)
+    end
+  end
+end
 
 # Read the config YAML file
 config = nil

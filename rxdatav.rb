@@ -1,6 +1,118 @@
-require 'yaml'
 require "#{File.dirname(__FILE__)}/rmxp/rgss.rb"
 require "#{File.dirname(__FILE__)}/common.rb"
+
+#
+# Adds the sort of the keys so the variables shows up in
+# the correct order
+# (There must be a simpler way to do this)
+#
+module RPG
+  class Actor
+    include SortedYamlObject
+  end
+  class Animation
+    include SortedYamlObject
+    class Frame
+      include SortedYamlObject
+    end
+    class Timing
+      include SortedYamlObject
+    end
+  end
+  class Armor
+    include SortedYamlObject
+  end
+  class AudioFile
+    include SortedYamlObject
+  end
+  class Class
+    include SortedYamlObject
+    class Learning
+      include SortedYamlObject
+    end
+  end
+  class CommonEvent
+    include SortedYamlObject
+  end
+  class Enemy
+    class Action
+      include SortedYamlObject
+    end
+  end
+  class Event
+    include SortedYamlObject
+    class Page
+      include SortedYamlObject
+      class Condition
+        include SortedYamlObject
+      end
+      class Graphic
+        include SortedYamlObject
+      end
+    end
+  end
+  class EventCommand
+    include SortedYamlObject
+  end
+  class Item
+    include SortedYamlObject
+  end
+  class Map
+    include SortedYamlObject
+  end
+  class MapInfo
+    include SortedYamlObject
+  end
+  class MoveRoute
+    include SortedYamlObject
+  end
+  class MoveCommand
+    include SortedYamlObject
+  end
+  class Skill
+    include SortedYamlObject
+  end
+  class State
+    include SortedYamlObject
+  end
+  class System
+    include SortedYamlObject
+    class Words
+      include SortedYamlObject
+    end
+    class TestBattler
+      include SortedYamlObject
+    end
+  end
+  class Tileset
+    include SortedYamlObject
+  end
+  class Troop
+    include SortedYamlObject
+    class Member
+      include SortedYamlObject
+    end
+    class Page
+      include SortedYamlObject
+      class Condition
+        include SortedYamlObject
+      end
+    end
+  end
+  class Weapon
+    include SortedYamlObject
+  end
+end
+class Table
+  include SortedYamlObject
+end
+class Tone
+  include SortedYamlObject
+end
+class Color
+  include SortedYamlObject
+end
+
 def data_exporter
 	# Set up the directory paths
 	$INPUT_DIR  = $PROJECT_DIR + '/' + $RXDATA_DIR + '/'
@@ -80,10 +192,10 @@ def data_exporter
 	  end
   
 		target_file = File.basename(files[i], ".rxdata") + ".yaml"
-
+    
   	# Dump the data to a YAML file
 	  File.open($OUTPUT_DIR + target_file, "wb") do |outfile|
-	    YAML::dump({'root' => data}, outfile )
+	    Psych.dump({'root' => data }, outfile )
 	  end
 
 		#$CHECKSUM[target_file] = get_file_hash($OUTPUT_DIR + target_file)
@@ -187,7 +299,7 @@ def data_importer
 	  # Load the data from yaml file
 	  start_time = Time.now
 	  File.open( $INPUT_DIR + files[i], "r+" ) do |yamlfile|
-	    data = YAML::load( yamlfile )
+	    data = Psych.load( yamlfile )
 	  end
 
 	  # Calculate the time to load the .yaml file
