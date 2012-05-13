@@ -36,9 +36,19 @@ module SortedYamlObject
 end
 
 # Read the config YAML file
-config = nil
+config = {
+  "rxdata_dir"        => "Data",
+  "yaml_dir"          => "Data/Yaml",
+  "scripts_dir"       => "Data/Scripts",
+  "rxdata_ignore_list"=> ["Scripts.rxdata"],
+  "verbose"           => true,
+  "magic_number"      => -1,
+  "edit_map_id"       => -1,
+  "map_expanded"      => nil
+}
+
 File.open( "config.yaml", "r+" ) do |configfile|
-  config = YAML::load( configfile )
+  config = config.merge YAML::load( configfile )
 end
 
 # Initialize configuration parameters
