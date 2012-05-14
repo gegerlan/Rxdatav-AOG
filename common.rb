@@ -16,21 +16,69 @@ require 'zlib'
 # order of hash keys is not guaranteed.  This change modifies the Hash#to_yaml method
 # to sort the hash based on key before emitting the YAML for it.
 #-------------------------------------------------------------------------------------
-class Hash
-  # Replacing the to_yaml function so it'll serialize hashes sorted (by their keys)
-  def encode_with(coder)
-    coder.tag = self.class == ::Hash ? nil : "!ruby/hash:#{self.class}"
-    coder.map( coder.tag, coder.style ) do |map|
-      sort.each do |k, v|
-        map.add(k.to_s, v)
+module Psych
+  module Visitors
+    class YAMLTree < Psych::Visitors::Visitor
+      def accept target
+        # return any aliases we find
+        #if @st.key? target.object_id
+        #  oid         = target.object_id
+         # node        = @st[oid]
+        #  anchor      = oid.to_s
+        #  node.anchor = anchor
+         # return @emitter.alias anchor
+        #end
+
+        if target.respond_to?(:to_yaml)
+          begin
+            loc = target.method(:to_yaml).source_location.first
+            if loc !~ /(syck\/rubytypes.rb|psych\/core_ext.rb)/
+              unless target.respond_to?(:encode_with)
+                if $VERBOSE
+                  warn "implementing to_yaml is deprecated, please implement \"encode_with\""
+                end
+
+                target.to_yaml(:nodump => true)
+              end
+            end
+          rescue
+            # public_method or source_location might be overridden,
+            # and it's OK to skip it since it's only to emit a warning
+          end
+        end
+
+        if target.respond_to?(:encode_with)
+          dump_coder target
+        else
+          send(@dispatch_cache[target.class], target)
+        end
       end
-    end
-  end
-end
-module SortedYamlObject
-  def encode_with(coder)
-    instance_variables.sort.each do |iv|
-      coder.map[ iv.to_s.sub(/^@/, '') ] = instance_variable_get(iv)
+      def visit_Hash o
+        tag      = o.class == ::Hash ? nil : "!ruby/hash:#{o.class}"
+        implicit = !tag
+
+        register(o, @emitter.start_mapping(nil, tag, implicit, Psych::Nodes::Mapping::BLOCK))
+
+        o = o.sort
+        
+        o.each do |k,v| # Make sure the hashes are sorted on their inder
+          accept k
+          accept v
+        end
+
+        @emitter.end_mapping
+      end
+      def binary? string
+        false # We don't "do" binary in our case. Solves issue with names turning binary.
+      end
+      def dump_ivars target
+        ivars = find_ivars target
+
+        ivars.sort.each do |iv| # Sort the instant variables so we know the order remains
+          @emitter.scalar("#{iv.to_s.sub(/^@/, '')}", nil, nil, true, false, Nodes::Scalar::ANY)
+          accept target.instance_variable_get(iv)
+        end
+      end
     end
   end
 end
